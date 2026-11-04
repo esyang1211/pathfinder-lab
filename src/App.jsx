@@ -161,7 +161,30 @@ export default function App() {
      <div className="feature-strip"><div><strong>동일한 문제</strong><span>출발점 → 도착점 최단 경로</span></div><div><strong>서로 다른 선택 기준</strong><span>g(n) vs g(n)+h(n)</span></div><div><strong>직접 검증</strong><span>의사코드 · 복잡도 · 시각화</span></div></div>
     </>}
     {page===2 && <><h1>핵심 로직을<br/><em>코드로 읽기.</em></h1><p className="lead">두 알고리즘 모두 거리 갱신(Relaxation)을 사용하지만, 우선순위 기준이 달라요.</p><div className="code-grid"><CodePanel title="◎ Dijkstra · Pseudocode">{DIJKSTRA_CODE}</CodePanel><CodePanel title="✦ A* · Pseudocode 미리보기">{ASTAR_CODE}</CodePanel></div><section className="info-panel"><div className="pill">코드 해설</div><h3>“더 짧은 경로를 발견했다”는 무슨 뜻일까?</h3><p>어떤 칸까지 기존에 알고 있던 거리가 7인데 다른 길로 가 보니 5라면 <strong>7 → 5</strong>로 수정합니다. 처음 발견한 경우는 <strong>∞ → 5</strong>가 돼요. 이게 거리 갱신이며, 후보 정점을 큐에 넣어 다음 탐색 대상으로 고려하게 됩니다.</p><p>실제 구현은 동일 정점을 큐에 여러 번 넣을 수 있으며, 이미 확정한 정점은 건너뜁니다.</p></section></>}
-    {page===5 && <><h1>얼마나 빠르고,<br/><em>얼마나 기억할까?</em></h1><p className="lead">V는 정점 수, E는 간선 수입니다. 우선순위 큐를 이진 힙으로 구현했을 때의 대표적인 상한입니다.</p><div className="table-frame"><table><thead><tr><th>분석 항목</th><th>Dijkstra</th><th>A*</th></tr></thead><tbody><tr><td>시간 복잡도</td><td>O((V+E) log V)</td><td>일반적으로 O((V+E) log V)*</td></tr><tr><td>공간 복잡도</td><td>O(V+E)</td><td>O(V+E)</td></tr><tr><td>우선순위</td><td>g(n)</td><td>g(n)+h(n)</td></tr><tr><td>목적지 정보</td><td>사용하지 않음</td><td>휴리스틱에 활용</td></tr></tbody></table></div><section className="info-panel"><h3>왜 이런 복잡도가 나올까?</h3><p>인접 리스트로 그래프를 저장하면 <strong>O(V+E)</strong> 공간이 필요합니다. 정점과 간선을 확인하고 우선순위 큐를 갱신할 때 로그 시간이 들어, 이진 힙 기반 구현에서는 보통 <strong>O((V+E) log V)</strong>로 설명합니다.</p><p><strong>*주의:</strong> A*의 시간 복잡도는 휴리스틱의 성질과 구현 방식에 따라 달라집니다. 이 사이트처럼 <strong>일관적인 휴리스틱</strong>으로 확정 정점을 재확장하지 않는 경우의 그래프 탐색 상한입니다. 모든 문제에서 A*가 Dijkstra보다 빠르다는 뜻은 아닙니다.</p><p>지금까지 작성한 실습 코드는 힙 대신 <strong>배열을 매번 정렬</strong>하므로, 위 표의 이진 힙 구현과 실제 코드의 실행 비용은 같지 않아요. 이 점은 최종 분석에서 별도로 명시할 예정입니다.</p></section></>}
+    {page===5 && <>
+      <h1>얼마나 빠르고,<br/><em>얼마나 기억할까?</em></h1>
+      <p className="lead">두 알고리즘의 시간·공간 복잡도를 비교합니다. n 또는 V는 정점 수, E는 간선 수를 뜻합니다.</p>
+      <div className="table-frame">
+        <table>
+          <thead><tr><th>분석 항목</th><th>Dijkstra</th><th>A*</th></tr></thead>
+          <tbody>
+            <tr><td>기본 배열 탐색의 시간 복잡도</td><td>O(n²)</td><td>O(n²) (정점을 다시 처리하지 않는 경우)</td></tr>
+            <tr><td>이진 힙 사용 시 시간 복잡도</td><td>O((V+E) log V)</td><td>O((V+E) log V) (정점을 다시 처리하지 않는 경우)</td></tr>
+            <tr><td>현재 미로 코드의 시간 복잡도 (상한)</td><td>O(V² log V)</td><td>O(V² log V)</td></tr>
+            <tr><td>현재 미로 코드의 공간 복잡도</td><td>O(V)</td><td>O(V)</td></tr>
+            <tr><td>다음 정점을 고르는 기준</td><td>g(n): 지금까지 이동한 거리</td><td>g(n)+h(n): 이동한 거리 + 남은 거리 예상값</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <section className="info-panel">
+        <h3>왜 이런 복잡도가 나올까?</h3>
+        <p><strong>① 기본 배열 탐색 — O(n²)</strong><br/>정점 n개 중에서 가장 가까운 정점을 찾으려고 최대 n개를 살펴보는 일을 최대 n번 반복하기 때문입니다. A*도 다시 처리하는 정점이 없고 같은 방식으로 후보를 찾으면 같은 상한이 나옵니다.</p>
+        <p><strong>② 이진 힙 사용 — O((V+E) log V)</strong><br/>정점을 꺼내고 더 짧은 길을 발견할 때 우선순위를 갱신하는 작업에 로그 시간이 걸립니다. 정점과 간선을 확인하는 작업을 합치면 위 식이 나옵니다. A*도 정점을 다시 처리하지 않는 조건에서는 같은 형태로 나타낼 수 있습니다.</p>
+        <p><strong>③ 현재 사이트 코드 — O(V² log V)</strong><br/>실제 코드는 이진 힙 대신 <strong>배열을 매번 정렬</strong>합니다. 한 번 정렬할 때 후보가 많으면 O(V log V)가 들고, 이 과정을 최대 O(V)번 반복할 수 있어요. 이 사이트의 미로는 각 칸이 최대 네 칸과만 연결되므로 이 상한을 사용할 수 있습니다.</p>
+        <p><strong>④ 공간 복잡도 — O(V)</strong><br/>현재 미로에서는 각 정점의 거리, 방문 여부, 이전 위치를 배열에 저장하고 탐색 기록도 남깁니다. 연결 방향이 최대 네 개로 정해져 있어 저장하는 정보가 정점 수에 비례합니다. 일반적인 인접 리스트 그래프를 저장한다면 <strong>O(V+E)</strong> 공간이 필요합니다.</p>
+        <p><strong>⑤ 그렇다면 두 알고리즘은 똑같은걸까요??</strong><br/>복잡도 식이 같아도 실제로 확인하는 정점 수는 다를 수 있습니다!! Dijkstra는 지금까지 이동한 거리가 작은 정점부터, A*는 목적지까지 남은 거리의 예상값도 고려해 탐색합니다. 따라서 아래 미로 실험에서 <strong>방문한 정점 수</strong>를 직접 비교해 볼 수 있습니다. A*가 언제나 더 적게 방문하는 것은 아닙니다.</p>
+      </section>
+    </>}
     {(page===7) && <>
       <h1>{page===7?<>한 걸음씩 보는<br/><em>탐색의 원리.</em></>:<>직접 그려 보는<br/><em>알고리즘 대결.</em></>}</h1>
       <p className="lead">{isLesson ? '2×4 미로(총 8정점)로 한 단계씩 살펴봐요. 클릭하면 장애물을 만들 수 있어요!!' : '8×8 미로(총 64정점)를 자유롭게 편집하며 두 알고리즘을 체험해봐요!'}</p>
